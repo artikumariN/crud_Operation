@@ -17,6 +17,7 @@ var express         =   require('express'),
 
 app.use(express.static(path.join(__dirname, 'app')));
 app.use(express.static(path.join(__dirname, 'node_modules')));
+app.use(express.static(path.join(__dirname, 'uploads')));
 
 app.use(bodyParser.json());
 
@@ -48,9 +49,25 @@ app.get('/findData',function(req,res){
   });
 });
 
+app.get('/findUserData/:id',function(req,res){
+  model.find({'_id':req.params.id},function(err,data){
+    res.send(data);
+  });
+});
+
 //Adding More records using input boxes
-app.post('/add',function(req,res){
-  var data          = req.body,
+app.post('/add',upload.single('imagefile'),function(req,res){
+  req.params.name=req.body.name;
+  req.params.title=req.body.title;
+  req.params.company_name=req.body.company_name;
+  req.params.about_me=req.body.about_me;
+  req.params.email=req.body.email;
+  req.params.cell=req.body.cell;
+  req.params.address=req.body.address;
+  req.params.phone=req.body.phone;
+  req.params.image=req.file.filename;
+    console.log(req.params);
+      var data      = req.params,
       saveRecord    = new model(data);
       saveRecord.save(function(err,data){
         if(err)
@@ -58,7 +75,6 @@ app.post('/add',function(req,res){
           console.log("something error data not saved properly");
         }
         else {
-
               res.sendFile(userpath+"/index.html");
           }
       })
@@ -117,6 +133,28 @@ app.post('/uploads', upload.single('file'), function(req,res){
 });
 
 //created  port no
+
+app.post('/update',upload.single('image'),function(req,res){
+  console.log(req.file.filename);
+  var id=req.body.id;
+  req.params.name=req.body.name;
+  req.params.title=req.body.title;
+  req.params.company_name=req.body.company_name;
+  req.params.about_me=req.body.about_me;
+  req.params.email=req.body.email;
+  req.params.cell=req.body.cell;
+  req.params.address=req.body.address;
+  req.params.image=req.file.filename;
+
+    model.findByIdAndUpdate(id,req.params ,
+    function(err) {
+     if (err) {
+       res.send("error");
+     }
+        res.sendFile(userpath+"/index.html");
+     });
+
+});
 app.listen('8080',function(){
   console.log("Your app is listening on 8080 port!");
 });
